@@ -42,7 +42,7 @@ class generator (db_file:String) {
 
 
 
-  /*def generator_X_indicators(file_location: String) = {
+  def generator_X_indicators(file_location: String) = {
 
     val ages = List((25,29),(30,34),(35,39),(40,44),(45,49),(50,54),(55,59),(30,59))
     val row_names = List("25-29","30-34","35-39","40-44","45-49","50-54","55-59", "All ages: 30-59 years")
@@ -70,9 +70,9 @@ class generator (db_file:String) {
           fw.close()
 
     }
-}*/
+}
 
-  def generator_X_age(file_location: String) = {
+  /*def generator_X_age(file_location: String) = {
 
     val column_list = List(unique_age_sorted.min to unique_age_sorted.max)
     val column_names = "Ages" :: column_list
@@ -88,5 +88,5 @@ class generator (db_file:String) {
     val named_age_data = cleaned_age_data.map(ls => row_names.map(name => name::ls))
 
     cleaned_age_data.foreach(x => println(x))
-  }
+  } */
 }
