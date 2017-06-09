@@ -1,3 +1,5 @@
+import java.io.FileWriter
+
 import db_creation.sqlContext
 
 /**
@@ -72,21 +74,29 @@ class generator (db_file:String) {
     }
 }
 
-  /*def generator_X_age(file_location: String) = {
+  def generator_X_age(file_location: String) = {
 
-    val column_list = List(unique_age_sorted.min to unique_age_sorted.max)
+    val column_list = (unique_age_sorted.min to unique_age_sorted.max).toList
     val column_names = "Ages" :: column_list
     val full_row_names = List("Follow-up time: 1 year", "Follow-up time: 2 years", "Follow-up time: 3 years", "Follow-up time: 4 years", "Follow-up time: 5 years", "Follow-up time: 6 years", "Follow-up time: 7 years", "Follow-up time: 8 years", "Follow-up time: 9 years", "Follow-up time: 10 years")
 
+    for (year <- unique_year) {
+      val lists_from_sql = unique_age_sorted.map(age => unique_indicator.map(ind => sql_command_age(year, age, ind)))
+      val age_data = lists_from_sql.transpose
+      val cleaned_age_data = for (ls <- age_data if ls.reduceLeft(_ + _) > 0) yield ls
+      val row_names = full_row_names.take(cleaned_age_data.length)
 
-    val lists_from_sql = unique_age_sorted.map(age => unique_indicator.map(ind => sql_command_age("1995", age, ind)))
-    val age_data = lists_from_sql.transpose
-    val cleaned_age_data = for (ls <- age_data if ls.reduceLeft(_ + _) > 0 ) yield ls
-    println(cleaned_age_data)
-    val row_names = full_row_names.take(cleaned_age_data.length)
-    println(row_names)
-    val named_age_data = cleaned_age_data.map(ls => row_names.map(name => name::ls))
 
-    cleaned_age_data.foreach(x => println(x))
-  } */
+      val age_data_row_names = for ((ls, index) <- cleaned_age_data.zipWithIndex) yield row_names(index) :: ls
+
+      val ready_age_data = column_names :: age_data_row_names
+      val txt_name = year.toString + ".txt"
+      val location = file_location
+      val txt = location.concat(txt_name)
+
+      val fw = new FileWriter(txt, true)
+      ready_age_data.foreach(x => fw.write(x.mkString(",") + "\n"))
+      fw.close()
+    }
+  }
 }
