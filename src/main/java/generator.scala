@@ -10,13 +10,14 @@ class generator (db_file:String) {
   df.registerTempTable("data")
 
   val unique_indicator = df.select("indicator").collect().distinct.toList.map(r => r.getInt(0))
-  val unique_year = df.select("index_year").collect().distinct.toList.map(r => r.getString(0))
+  val unique_year = df.select("index_year").collect().distinct.toList.map(r => r.getInt(0))
   val unique_age = df.select("age").collect().distinct.toList.map(r => r.getInt(0))
   val unique_age_sorted = unique_age.sortWith(_ < _)
+  val unique_year_sorted = unique_year.sortWith(_ < _)
 
   def parseDouble(value: String) = try { Some(value.toDouble) } catch { case _ => None }
 
-  def sql_command_indicators (ind:Int, age:(Int,Int), year:String):Double = {
+  def sql_command_indicators (ind:Int, age:(Int,Int), year:Int):Double = {
 
     val command = s"SELECT Round(SUM(numerator)/SUM(denominator)*100, 2) FROM data WHERE indicator = $ind AND age >= ${age._1} AND age <= ${age._2} AND index_year = $year"
     val retrieved_value = Option(sqlContext.sql(command).first().get(0)) match {
@@ -29,7 +30,7 @@ class generator (db_file:String) {
     return result
   }
 
-  def sql_command_age (year:String, age:Int, Ind:Int):Double = {
+  def sql_command_age (year:Int, age:Int, Ind:Int):Double = {
 
     val command = s"SELECT Round(SUM(numerator)/SUM(denominator)*100, 2) FROM data WHERE index_year = $year AND age = $age AND indicator = $Ind"
     val retrieved_value = Option(sqlContext.sql(command).first().get(0)) match {
@@ -98,5 +99,15 @@ class generator (db_file:String) {
       ready_age_data.foreach(x => fw.write(x.mkString(",") + "\n"))
       fw.close()
     }
+
+    def generator_X_year(file_location: String) = {
+      val column_list = (unique_year_sorted.min to unique_year_sorted.max).toList
+      val column_names = "Ages" :: column_list
+
+      val row_names = List("25-29","30-34","35-39","40-44","45-49","50-54","55-59", "All ages: 30-59 years")
+
+
+    }
+
   }
 }

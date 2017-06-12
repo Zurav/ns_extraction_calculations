@@ -22,7 +22,7 @@ object db_creation {
       .add(StructField("country", StringType, true))
       .add(StructField("indicator", IntegerType, true))
       .add(StructField("gender", StringType, true))
-      .add(StructField("index_year", StringType, true))
+      .add(StructField("index_year", IntegerType, true))
       .add(StructField("age", IntegerType, true))
       .add(StructField("denominator", LongType, true))
       .add(StructField("numerator", LongType, true))
