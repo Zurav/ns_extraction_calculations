@@ -100,14 +100,22 @@ class generator (db_file:String) {
       fw.close()
     }
 
-    def generator_X_year(file_location: String) = {
-      val column_list = (unique_year_sorted.min to unique_year_sorted.max).toList
-      val column_names = "Ages" :: column_list
-
-      val row_names = List("25-29","30-34","35-39","40-44","45-49","50-54","55-59", "All ages: 30-59 years")
 
 
-    }
+  }
+
+  def generator_X_year(file_location: String) = {
+    val column_list = (unique_year_sorted.min to unique_year_sorted.max).toList
+    val column_names = "Ages" :: column_list
+    val ages = List((25,29),(30,34),(35,39),(40,44),(45,49),(50,54),(55,59),(30,59))
+    val row_names = List("25-29","30-34","35-39","40-44","45-49","50-54","55-59", "All ages: 30-59 years")
+
+
+    val lists_from_sql = unique_year.map(year => ages.map(age => sql_command_indicators(1, age, year)))
+    val cleaned_lists_from_sql = for (ls <- lists_from_sql if ls.reduceLeft(_ + _) > 0 ) yield ls
+    println(cleaned_lists_from_sql)
+
+
 
   }
 }

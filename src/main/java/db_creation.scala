@@ -32,7 +32,7 @@ object db_creation {
     val rows = csv.map(line => line.split(",").map(_.trim))
     val header = rows.first
     val data = rows.filter(_ (0) != header(0))
-    val rdd = data.map(row => Row(row(0), row(1), row(2).toInt, row(3), row(4), row(5).toInt, row(6).toLong, row(7).toLong))
+    val rdd = data.map(row => Row(row(0), row(1), row(2).toInt, row(3), row(4).toInt, row(5).toInt, row(6).toLong, row(7).toLong))
 
     val df = sqlContext.createDataFrame(rdd, schema)
     return df

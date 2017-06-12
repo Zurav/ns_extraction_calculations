@@ -9,7 +9,8 @@ object main {
     val file_location = "/Users/zurbzh/Desktop/Nordscreen_testrun_Finland/test/"
     val gen = new generator(db)
     //gen.generator_X_indicators(file_location)
-    gen.generator_X_age(file_location)
+    //gen.generator_X_age(file_location)
+    gen.generator_X_year(file_location)
 
   }
 
