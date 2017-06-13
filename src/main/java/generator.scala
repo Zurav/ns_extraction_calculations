@@ -9,41 +9,6 @@ class generator (db_file:String) {
   val df = db_creation.receive(db_file)
   df.registerTempTable("data")
 
-  val unique_indicator = df.select("indicator").collect().distinct.toList.map(r => r.getInt(0))
-  val unique_year = df.select("index_year").collect().distinct.toList.map(r => r.getInt(0))
-  val unique_age = df.select("age").collect().distinct.toList.map(r => r.getInt(0))
-  val unique_age_sorted = unique_age.sortWith(_ < _)
-  val unique_year_sorted = unique_year.sortWith(_ < _)
-
-  def parseDouble(value: String) = try { Some(value.toDouble) } catch { case _ => None }
-
-  def sql_command_indicators (ind:Int, age:(Int,Int), year:Int):Double = {
-
-    val command = s"SELECT Round(SUM(numerator)/SUM(denominator)*100, 1) FROM data WHERE indicator = $ind AND age >= ${age._1} AND age <= ${age._2} AND index_year = $year"
-    val retrieved_value = Option(sqlContext.sql(command).first().get(0)) match {
-      case Some(v) => v
-      case _ => 0.0
-    }
-    val result = parseDouble(retrieved_value.toString) match {
-      case Some(v) => v
-    }
-    return result
-  }
-
-  def sql_command_age (year:Int, age:Int, Ind:Int):Double = {
-
-    val command = s"SELECT Round(SUM(numerator)/SUM(denominator)*100, 1) FROM data WHERE index_year = $year AND age = $age AND indicator = $Ind"
-    val retrieved_value = Option(sqlContext.sql(command).first().get(0)) match {
-      case Some(v) => v
-      case _ => 0.0
-    }
-    val result = parseDouble(retrieved_value.toString) match {
-      case Some(v) => v
-    }
-    return result
-  }
-
-
   def writing_txt(number:Int, location:String, matrix:List[List[Any]]): Unit = {
     val txt_name = number.toString + ".txt"
     val file_location = location
@@ -56,6 +21,13 @@ class generator (db_file:String) {
   }
 
 
+  val unique_indicator = df.select("indicator").collect().distinct.toList.map(r => r.getInt(0))
+  val unique_year = df.select("index_year").collect().distinct.toList.map(r => r.getInt(0))
+  val unique_age = df.select("age").collect().distinct.toList.map(r => r.getInt(0))
+  val unique_age_sorted = unique_age.sortWith(_ < _)
+  val unique_year_sorted = unique_year.sortWith(_ < _)
+
+
 
   def generator_X_indicators(file_location: String) = {
 
@@ -65,7 +37,7 @@ class generator (db_file:String) {
 
     for (year <- unique_year) {
           //query to retrieve values from db
-          val lists_from_sql = unique_indicator.map(ind => ages.map(age => sql_command_indicators(ind, age, year)))
+          val lists_from_sql = unique_indicator.map(ind => ages.map(age => data_retrieval.sql_command_indicators(ind, age, year)))
           // delete lists which contain only 0s
           val cleaned_lists_from_sql = for (ls <- lists_from_sql if ls.reduceLeft(_ + _) > 0 ) yield ls
           // add row and column names according to the number of retrieved lists
@@ -89,7 +61,7 @@ class generator (db_file:String) {
     val full_row_names = List("Follow-up time: 1 year", "Follow-up time: 2 years", "Follow-up time: 3 years", "Follow-up time: 4 years", "Follow-up time: 5 years", "Follow-up time: 6 years", "Follow-up time: 7 years", "Follow-up time: 8 years", "Follow-up time: 9 years", "Follow-up time: 10 years")
 
     for (year <- unique_year) {
-      val lists_from_sql = unique_age_sorted.map(age => unique_indicator.map(ind => sql_command_age(year, age, ind)))
+      val lists_from_sql = unique_age_sorted.map(age => unique_indicator.map(ind => data_retrieval.sql_command_age(year, age, ind)))
       val age_data = lists_from_sql.transpose
       val cleaned_age_data = for (ls <- age_data if ls.reduceLeft(_ + _) > 0) yield ls
       val row_names = full_row_names.take(cleaned_age_data.length)
@@ -116,7 +88,7 @@ class generator (db_file:String) {
 
     for (ind <- unique_indicator) {
 
-      val lists_from_sql = unique_year.map(year => ages.map(age => sql_command_indicators(ind, age, year)))
+      val lists_from_sql = unique_year.map(year => ages.map(age => data_retrieval.sql_command_indicators(ind, age, year)))
 
       //val tr_lists_from_sql = lists_from_sql.transpose
       val cleaned_lists_from_sql = for (ls <- lists_from_sql if ls.reduceLeft(_ + _) > 0) yield ls
