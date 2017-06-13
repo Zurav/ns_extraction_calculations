@@ -44,6 +44,18 @@ class generator (db_file:String) {
   }
 
 
+  def writing_txt(number:Int, location:String, matrix:List[List[Any]]): Unit = {
+    val txt_name = number.toString + ".txt"
+    val file_location = location
+    val txt = file_location.concat(txt_name)
+
+    val fw = new FileWriter(txt, true)
+    matrix.foreach(x => fw.write(x.mkString(",") + "\n"))
+    fw.close()
+
+  }
+
+
 
   def generator_X_indicators(file_location: String) = {
 
@@ -64,13 +76,8 @@ class generator (db_file:String) {
           val ready_to_write = column_names :: indicators_data
 
           // name each file according to the year for which the values were retrieved
-          val txt_name = year.toString + ".txt"
-          val location = file_location
-          val txt = location.concat(txt_name)
 
-          val fw = new FileWriter(txt, true)
-          ready_to_write.foreach(x => fw.write(x.mkString(",") + "\n"))
-          fw.close()
+           writing_txt(year, file_location, ready_to_write)
 
     }
 }
@@ -91,13 +98,9 @@ class generator (db_file:String) {
       val age_data_row_names = for ((ls, index) <- cleaned_age_data.zipWithIndex) yield row_names(index) :: ls
 
       val ready_age_data = column_names :: age_data_row_names
-      val txt_name = year.toString + ".txt"
-      val location = file_location
-      val txt = location.concat(txt_name)
 
-      val fw = new FileWriter(txt, true)
-      ready_age_data.foreach(x => fw.write(x.mkString(",") + "\n"))
-      fw.close()
+
+      writing_txt(year, file_location, ready_age_data)
     }
 
 
@@ -111,24 +114,29 @@ class generator (db_file:String) {
     val full_row_names = List("25-29","30-34","35-39","40-44","45-49","50-54","55-59", "All ages: 30-59 years")
 
 
-    val lists_from_sql = unique_year.map(year => ages.map(age => sql_command_indicators(10, age, year)))
+    for (ind <- unique_indicator) {
 
-    //val tr_lists_from_sql = lists_from_sql.transpose
-    val cleaned_lists_from_sql = for (ls <- lists_from_sql if ls.reduceLeft(_ + _) > 0 ) yield ls
-    println(cleaned_lists_from_sql.length)
-    val transposed_lists = cleaned_lists_from_sql.transpose
-    val year_data = for (ls <- transposed_lists if ls.reduceLeft(_ + _) > 0 ) yield ls
+      val lists_from_sql = unique_year.map(year => ages.map(age => sql_command_indicators(ind, age, year)))
 
-    val n_exc_rows = transposed_lists.length - year_data.length
-    val row_names = full_row_names.drop(n_exc_rows)
+      //val tr_lists_from_sql = lists_from_sql.transpose
+      val cleaned_lists_from_sql = for (ls <- lists_from_sql if ls.reduceLeft(_ + _) > 0) yield ls
+      println(cleaned_lists_from_sql.length)
+      val transposed_lists = cleaned_lists_from_sql.transpose
+      val year_data = for (ls <- transposed_lists if ls.reduceLeft(_ + _) > 0) yield ls
 
-    val number_for_columns = column_list.drop(lists_from_sql.length - cleaned_lists_from_sql.length)
+      val n_exc_rows = transposed_lists.length - year_data.length
+      val row_names = full_row_names.drop(n_exc_rows)
 
-    val column_names = "ages" :: number_for_columns
+      val number_for_columns = column_list.drop(lists_from_sql.length - cleaned_lists_from_sql.length)
 
-    val year_data_row_names = for ((ls, index) <- year_data.zipWithIndex) yield row_names(index) :: ls
-    val ready_to_write = column_names :: year_data_row_names
-    ready_to_write.foreach(x => println(x.mkString(",")))
+      val column_names = "ages" :: number_for_columns
+
+      val year_data_row_names = for ((ls, index) <- year_data.zipWithIndex) yield row_names(index) :: ls
+      val ready_to_write = column_names :: year_data_row_names
+
+
+      writing_txt(ind, file_location, ready_to_write)
+    }
 
 
   }
