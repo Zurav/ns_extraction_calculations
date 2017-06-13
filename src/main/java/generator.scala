@@ -19,7 +19,7 @@ class generator (db_file:String) {
 
   def sql_command_indicators (ind:Int, age:(Int,Int), year:Int):Double = {
 
-    val command = s"SELECT Round(SUM(numerator)/SUM(denominator)*100, 2) FROM data WHERE indicator = $ind AND age >= ${age._1} AND age <= ${age._2} AND index_year = $year"
+    val command = s"SELECT Round(SUM(numerator)/SUM(denominator)*100, 1) FROM data WHERE indicator = $ind AND age >= ${age._1} AND age <= ${age._2} AND index_year = $year"
     val retrieved_value = Option(sqlContext.sql(command).first().get(0)) match {
       case Some(v) => v
       case _ => 0.0
@@ -32,7 +32,7 @@ class generator (db_file:String) {
 
   def sql_command_age (year:Int, age:Int, Ind:Int):Double = {
 
-    val command = s"SELECT Round(SUM(numerator)/SUM(denominator)*100, 2) FROM data WHERE index_year = $year AND age = $age AND indicator = $Ind"
+    val command = s"SELECT Round(SUM(numerator)/SUM(denominator)*100, 1) FROM data WHERE index_year = $year AND age = $age AND indicator = $Ind"
     val retrieved_value = Option(sqlContext.sql(command).first().get(0)) match {
       case Some(v) => v
       case _ => 0.0
@@ -106,7 +106,7 @@ class generator (db_file:String) {
 
   def generator_X_year(file_location: String) = {
     val column_list = (unique_year_sorted.min to unique_year_sorted.max).toList
-    val full_column_names = "Ages" :: column_list
+
     val ages = List((25,29),(30,34),(35,39),(40,44),(45,49),(50,54),(55,59),(30,59))
     val full_row_names = List("25-29","30-34","35-39","40-44","45-49","50-54","55-59", "All ages: 30-59 years")
 
@@ -121,7 +121,10 @@ class generator (db_file:String) {
 
     val n_exc_rows = transposed_lists.length - year_data.length
     val row_names = full_row_names.drop(n_exc_rows)
-    val column_names = full_column_names.take(cleaned_lists_from_sql.length + 1)
+
+    val number_for_columns = column_list.drop(lists_from_sql.length - cleaned_lists_from_sql.length)
+
+    val column_names = "ages" :: number_for_columns
 
     val year_data_row_names = for ((ls, index) <- year_data.zipWithIndex) yield row_names(index) :: ls
     val ready_to_write = column_names :: year_data_row_names
