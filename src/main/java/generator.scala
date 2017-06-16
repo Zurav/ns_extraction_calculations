@@ -48,11 +48,10 @@ class generator (db_file:String) {
           val ready_to_write = column_names :: indicators_data
 
           // name each file according to the year for which the values were retrieved
-
-           writing_txt(year, file_location, ready_to_write)
+          writing_txt(year, file_location, ready_to_write)
 
     }
-}
+  }
 
   def generator_X_age(file_location: String) = {
 
@@ -74,10 +73,10 @@ class generator (db_file:String) {
 
       writing_txt(year, file_location, ready_age_data)
     }
-
-
-
   }
+
+
+
 
   def generator_X_year(file_location: String) = {
     val column_list = (unique_year_sorted.min to unique_year_sorted.max).toList
@@ -92,7 +91,6 @@ class generator (db_file:String) {
 
       //val tr_lists_from_sql = lists_from_sql.transpose
       val cleaned_lists_from_sql = for (ls <- lists_from_sql if ls.reduceLeft(_ + _) > 0) yield ls
-      println(cleaned_lists_from_sql.length)
       val transposed_lists = cleaned_lists_from_sql.transpose
       val year_data = for (ls <- transposed_lists if ls.reduceLeft(_ + _) > 0) yield ls
 
@@ -101,7 +99,7 @@ class generator (db_file:String) {
 
       val number_for_columns = column_list.drop(lists_from_sql.length - cleaned_lists_from_sql.length)
 
-      val column_names = "ages" :: number_for_columns
+      val column_names = "year" :: number_for_columns
 
       val year_data_row_names = for ((ls, index) <- year_data.zipWithIndex) yield row_names(index) :: ls
       val ready_to_write = column_names :: year_data_row_names
@@ -109,7 +107,5 @@ class generator (db_file:String) {
 
       writing_txt(ind, file_location, ready_to_write)
     }
-
-
   }
 }
